@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up</title>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <link rel="stylesheet" href="/css/Auth_UI_style.css" />
+  <script src="/js/signup.js" defer></script>
+</head>
+<body>
+  <section>
+    <form id="signup-form">
+      <h1>Sign Up</h1>
+
+      <div class="inputbox">
+        <input type="text" id="firstname" name="firstname" required />
+        <label for="firstname">First Name</label>
+      </div>
+
+      <div class="inputbox">
+        <input type="text" id="lastname" name="lastname" required />
+        <label for="lastname">Last Name</label>
+      </div>
+
+      <div class="inputbox">
+        <input type="text" id="username" name="username" required />
+        <label for="username">Username</label>
+      </div>
+
+      <div class="inputbox">
+        <input type="text" id="email" name="email" required />
+        <label for="email">Email</label>
+      </div>
+
+      <div class="inputbox">
+        <input type="password" id="password" name="password" required />
+        <label for="password">Password</label>
+      </div>
+
+      <button type="submit">Sign Up</button>
+
+      <div class="register">
+        <p>Already have an account? <a href="/login">Log In</a></p>
+      </div>
+    </form>
+  </section>
+</body>
+</html>
