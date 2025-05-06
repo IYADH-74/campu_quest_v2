@@ -1,6 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("signup-form");
 
+  fetch("/api/classes")
+  .then(response => response.json())
+  .then(classes => {
+    classes.forEach(classe => {
+      const option = document.createElement("option");
+      option.value = classe.id;
+      option.textContent = classe.className;
+      classDropdown.appendChild(option);
+    });
+  })
+  .catch(err => {
+    console.error("FAILED TO LOAD CLASSES:", err);
+    alert("Could not load class list. Talk to IT or scream into the void.");
+  });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -10,7 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
       username: form.username.value,
       email: form.email.value,
       password: form.password.value,
-      role:"Student"
+      role:"Student",
+      classeId: classDropdown.value,
     };
     try {
       const response = await fetch("/auth/signup", {

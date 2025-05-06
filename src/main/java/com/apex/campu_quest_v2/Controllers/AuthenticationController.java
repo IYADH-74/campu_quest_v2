@@ -2,10 +2,14 @@ package com.apex.campu_quest_v2.Controllers;
 
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.campu_quest_v2.Dto.LoginUserDto;
-import com.apex.campu_quest_v2.Dto.RegisterUserDto;
+import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Responses.LoginResponse;
@@ -25,7 +29,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<User> register(@RequestBody RegisterStudentDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }
@@ -34,7 +38,7 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto){
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
+        LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime(),authenticatedUser.getRole());
         return ResponseEntity.ok(loginResponse);
     }
 

@@ -17,23 +17,29 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
     private final AuthenticationProvider authenticationProvider;
     private final JwtAuthFilter jwtAuthFilter;
-    public SecurityConfig(AuthenticationProvider authenticationProvider ,JwtAuthFilter jwtAuthFilter){
-        this.authenticationProvider =  authenticationProvider;
+
+    public SecurityConfig(AuthenticationProvider authenticationProvider, JwtAuthFilter jwtAuthFilter) {
+        this.authenticationProvider = authenticationProvider;
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-        @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login" ,"/verify", "/signup", "/auth/**", "/css/**", "/js/**").permitAll()
-                        .anyRequest().authenticated()
+                .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
+                .requestMatchers("/teacher/**").hasAnyAuthority("TEACHER")
+                .requestMatchers("/student/**").hasAnyAuthority("STUDENT")
+                .requestMatchers("/teacher/**").hasAnyAuthority("TEACHER")
+                .requestMatchers("/login", "/verify", "/signup", "/auth/**", "/css/**", "/js/**","/api/classes").permitAll()
+                .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -41,7 +47,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-        @Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("https://CampusQuest.com", "http://localhost:8080"));
@@ -53,5 +59,4 @@ public class SecurityConfig {
         return source;
     }
 
-    
 }

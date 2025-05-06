@@ -1,5 +1,4 @@
 package com.apex.campu_quest_v2.Entities;
-
 import com.apex.campu_quest_v2.Enums.Role;
 
 import jakarta.persistence.Entity;

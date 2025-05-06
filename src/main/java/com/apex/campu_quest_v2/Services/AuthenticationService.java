@@ -10,41 +10,101 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.apex.campu_quest_v2.Dto.LoginUserDto;
-import com.apex.campu_quest_v2.Dto.RegisterUserDto;
+import com.apex.campu_quest_v2.Dto.RegisterAdminDto;
+import com.apex.campu_quest_v2.Dto.RegisterStaffDto;
+import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
+import com.apex.campu_quest_v2.Dto.RegisterTeacherDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
+import com.apex.campu_quest_v2.Entities.Admin;
+import com.apex.campu_quest_v2.Entities.Classe;
+import com.apex.campu_quest_v2.Entities.Student;
 import com.apex.campu_quest_v2.Entities.User;
+import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 
 import jakarta.mail.MessagingException;
 
 @Service
 public class AuthenticationService {
+    private final ClasseRepository classeRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
 
     public AuthenticationService(
+            ClasseRepository classeRepository,
             UserRepository userRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder,
             EmailService emailService) {
+        this.classeRepository = classeRepository;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
 
-    public User signup(RegisterUserDto input) {
-        User user = new User(input.getFirstName(), input.getLastName(), input.getUsername(), input.getEmail(),
-                passwordEncoder.encode(input.getPassword()), input.getRole());
+    public User signup(RegisterStudentDto input) {
+        Classe classe = classeRepository.findById(input.getClasseId())
+                .orElseThrow(() -> new IllegalArgumentException("Classe not found with ID: " + input.getClasseId()));
+        Student user = new Student(
+            input.getFirstName(),
+            input.getLastName(),
+            input.getUsername(),
+            input.getEmail(),
+            passwordEncoder.encode(input.getPassword()),
+            classe);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
         sendVerificationEmail(user);
         return userRepository.save(user);
-        
     }
+
+    public User signupAdmin(RegisterAdminDto input) {
+        Admin user = new Admin(input.getFirstName(),
+            input.getLastName(),
+            input.getUsername(),
+            input.getEmail(),
+            passwordEncoder.encode(input.getPassword()),
+        input.getDiscription());
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setEnabled(false);
+        sendVerificationEmail(user);
+        return userRepository.save(user);
+    }
+
+    public User signupStaff(RegisterStaffDto input) {
+        Admin user = new Admin(input.getFirstName(),
+            input.getLastName(),
+            input.getUsername(),
+            input.getEmail(),
+            passwordEncoder.encode(input.getPassword()),
+        input.getDepartement());
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setEnabled(false);
+        sendVerificationEmail(user);
+        return userRepository.save(user);
+    }
+
+    public User signupStaff(RegisterTeacherDto input) {
+        Admin user = new Admin(input.getFirstName(),
+            input.getLastName(),
+            input.getUsername(),
+            input.getEmail(),
+            passwordEncoder.encode(input.getPassword()),
+        input.getMaterial());
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setEnabled(false);
+        sendVerificationEmail(user);
+        return userRepository.save(user);
+    }
+
+
 
     public User authenticate(LoginUserDto input) {
         User user = userRepository.findByEmail(input.getEmail())
@@ -113,11 +173,11 @@ public class AuthenticationService {
                 + "</body>"
                 + "</html>";
 
-                try {
-                    emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
-                } catch (MessagingException e) {
-                    throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
-                }
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+        }
     }
 
     private String generateVerificationCode() {
