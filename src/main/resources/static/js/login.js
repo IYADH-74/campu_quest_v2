@@ -16,25 +16,39 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     const data = await response.json();
 
     if (response.ok) {
-      localStorage.setItem("jwt", data.token);
-      localStorage.setItem("role", data.role);
-      alert("Login successful!");
+      const token = data.token;
+      const role = data.role;
 
-      switch (data.role) {
+      localStorage.setItem("jwt", token);
+      localStorage.setItem("role", role);
+      let route;
+      switch (role.toUpperCase()) {
         case "STUDENT":
-          window.location.href = "/StudentHomePage";
+          route = "/StudentHomePage";
           break;
         case "TEACHER":
-          window.location.href = "/TeacherHomePage";
+          route = "/TeacherHomePage";
           break;
         case "ADMIN":
-          window.location.href = "/AdminHomePage";
+          route = "/AdminHomePage";
           break;
         case "STAFF":
-          window.location.href = "/StaffHomePage";
+          route = "/StaffHomePage";
           break;
         default:
-          alert("Unknown role: " + data.role);
+          alert("Unknown role: " + role);
+          return;
+      }
+     const accessResponse = await fetch(route, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (accessResponse.ok) {
+        window.location.href = route;
+      } else {
+        alert("Access denied. Token may be invalid or you don't have permission.");
       }
 
     } else {

@@ -31,10 +31,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
-                .requestMatchers("/teacher/**").hasAnyAuthority("TEACHER")
-                .requestMatchers("/student/**").hasAnyAuthority("STUDENT")
-                .requestMatchers("/teacher/**").hasAnyAuthority("TEACHER")
+                .requestMatchers("/admin/**").hasAuthority("Admin")
+                .requestMatchers("/teacher/**").hasAuthority("Teacher")
+                .requestMatchers("/student/**").hasAuthority("Student")
+                .requestMatchers("/staff/**").hasAuthority("staff")
                 .requestMatchers("/login", "/verify", "/signup", "/auth/**", "/css/**", "/js/**","/api/classes").permitAll()
                 .anyRequest().authenticated()
                 )

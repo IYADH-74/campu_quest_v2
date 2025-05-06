@@ -3,9 +3,6 @@ package com.apex.campu_quest_v2.Entities;
 
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.apex.campu_quest_v2.Enums.Role;
 
 import jakarta.persistence.Column;
@@ -30,10 +27,6 @@ public class Student extends User{
     @Column(nullable = false)
     private int xp;
 
-
-
-    private List<Task> tasks = new ArrayList<>();
-
     public Student() {
         super();
     }
@@ -44,10 +37,4 @@ public class Student extends User{
         this.level = 0;
         this.xp = 0;
     }
-
-    public void addTask(Task task) { tasks.add(task); }
-    public void removeTask(Task task) { tasks.remove(task); }
-    public void clearTasks() { tasks.clear(); }
-
-
 }
