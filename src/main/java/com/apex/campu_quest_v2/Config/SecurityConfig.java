@@ -31,11 +31,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/admin/**").hasAuthority("Admin")
-                .requestMatchers("/teacher/**").hasAuthority("Teacher")
                 .requestMatchers("/student/**").hasAuthority("Student")
-                .requestMatchers("/staff/**").hasAuthority("staff")
-                .requestMatchers("/login", "/verify", "/signup", "/auth/**", "/css/**", "/js/**","/api/classes").permitAll()
+                .requestMatchers("/teacher/**").hasAuthority("Teacher")
+                .requestMatchers("/admin/**").hasAuthority("Admin")
+                .requestMatchers("/staff/**").hasAuthority("Staff")
+                .requestMatchers("/login", "/verify", "/signup", "/auth/**", "/css/**", "/js/**","/api/classes" ,"/student/home","/teacher/home").permitAll()
                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -51,7 +51,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("https://CampusQuest.com", "http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "UPDATE", "DELETE"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

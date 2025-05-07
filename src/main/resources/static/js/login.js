@@ -1,60 +1,50 @@
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+// login.js
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("login-form");
 
-  try {
-    const response = await fetch("/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const data = await response.json();
+    const email = form.email.value.trim();
+    const password = form.password.value;
 
-    if (response.ok) {
-      const token = data.token;
-      const role = data.role;
-
-      localStorage.setItem("jwt", token);
-      localStorage.setItem("role", role);
-      let route;
-      switch (role.toUpperCase()) {
-        case "STUDENT":
-          route = "/StudentHomePage";
-          break;
-        case "TEACHER":
-          route = "/TeacherHomePage";
-          break;
-        case "ADMIN":
-          route = "/AdminHomePage";
-          break;
-        case "STAFF":
-          route = "/StaffHomePage";
-          break;
-        default:
-          alert("Unknown role: " + role);
-          return;
-      }
-     const accessResponse = await fetch(route, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+    try {
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        credentials: "include",               // ← send & receive the jwt cookie
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
       });
 
-      if (accessResponse.ok) {
-        window.location.href = route;
-      } else {
-        alert("Access denied. Token may be invalid or you don't have permission.");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return alert("Login failed: " + (err.message || res.status));
       }
 
-    } else {
-      alert("Login failed: " + (data.message || "Check your credentials"));
+      const { role } = await res.json();
+      if (!role) {
+        return alert("Login succeeded but no role returned!");
+      }
+
+      localStorage.setItem("role", role);
+
+      const route = {
+        Student: "/student/home",
+        Teacher: "/teacher/home",
+        Admin:   "/admin/home",
+        Staff:   "/staff/home"
+      }[role];
+
+      if (!route) {
+        return alert("Unknown role: " + role);
+      }
+
+      window.location.href = route;
+
+    } catch (err) {
+      console.error("Network/error:", err);
+      alert("An unexpected error occurred: " + err.message);
     }
-  } catch (error) {
-    alert("An error occurred: " + error.message);
-  }
+  });
 });

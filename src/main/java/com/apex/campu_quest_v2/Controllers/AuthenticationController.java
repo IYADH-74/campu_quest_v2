@@ -2,6 +2,7 @@ package com.apex.campu_quest_v2.Controllers;
 
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.apex.campu_quest_v2.Responses.LoginResponse;
 import com.apex.campu_quest_v2.Services.AuthenticationService;
 import com.apex.campu_quest_v2.Services.JwtService;
 
+@CrossOrigin(origins = "*")
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
@@ -33,13 +35,12 @@ public class AuthenticationController {
         User registeredUser = authenticationService.signup(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto){
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime(),authenticatedUser.getRole());
-        return ResponseEntity.ok(loginResponse);
+        String role = authenticatedUser.getRole().name(); 
+        return ResponseEntity.ok(new LoginResponse(jwtToken, jwtService.getExpirationTime(), role));
     }
 
     @PostMapping("/verify")

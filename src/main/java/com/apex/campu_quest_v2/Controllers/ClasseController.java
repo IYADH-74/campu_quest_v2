@@ -19,7 +19,7 @@ public class ClasseController {
     @Autowired
     private ClasseRepository classeRepository;
 
-    @GetMapping
+    @GetMapping("/")
     public List<Classe> getAllClasses() {
         return classeRepository.findAll();
     }
