@@ -69,9 +69,9 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-     @Override
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(() -> role.name());
     }
 
 

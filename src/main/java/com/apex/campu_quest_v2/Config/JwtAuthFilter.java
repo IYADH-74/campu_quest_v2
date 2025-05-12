@@ -40,11 +40,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
+
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -76,6 +78,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         } catch (ServletException | IOException | UsernameNotFoundException exception) {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
+
     }
     
 }

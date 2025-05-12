@@ -39,7 +39,7 @@ public class Teacher extends User {
     }
 
     public Teacher(String firstName, String lastName, String username, String email, String password, String material) {
-        super(firstName, lastName, username,email, password, Role.Teacher);
+        super(firstName, lastName, username,email, password, Role.ROLE_TEACHER);
         this.material = material;
     }
 

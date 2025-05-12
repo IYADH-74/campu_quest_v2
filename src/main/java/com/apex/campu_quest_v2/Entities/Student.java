@@ -32,7 +32,7 @@ public class Student extends User{
     }
 
     public Student(String firstName, String lastName, String username, String email, String password , Classe classe) {
-        super(firstName, lastName, username,email, password,Role.Student);
+        super(firstName, lastName, username,email, password,Role.ROLE_STUDENT);
         this.classe = classe;
         this.level = 0;
         this.xp = 0;

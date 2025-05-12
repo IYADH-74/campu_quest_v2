@@ -19,7 +19,7 @@ public class Admin extends User  {
     }
 
     public Admin(String firstName, String lastName, String username,String email, String password, String privilegesDescription) {
-        super(firstName, lastName, username,email, password, Role.Admin);
+        super(firstName, lastName, username,email, password, Role.ROLE_ADMIN);
         this.privilegesDescription = privilegesDescription;
     }
     

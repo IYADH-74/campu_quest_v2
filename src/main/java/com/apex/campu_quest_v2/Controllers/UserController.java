@@ -3,6 +3,7 @@ package com.apex.campu_quest_v2.Controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,13 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('Admin', 'Student', 'Teacher', 'Staff')")
     public ResponseEntity<User> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         return ResponseEntity.ok(currentUser);
     }
+
 
     
 

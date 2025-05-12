@@ -22,7 +22,7 @@ public class Staff extends User {
     }
 
     public Staff(String firstName, String lastName, String username,String email, String password, String departement) {
-        super(firstName, lastName,  username,email, password, Role.Staff);
+        super(firstName, lastName,  username,email, password, Role.ROLE_STAFF);
         this.departement = departement;
     }
 

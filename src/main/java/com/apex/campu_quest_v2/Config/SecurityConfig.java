@@ -31,11 +31,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/student/**").hasAuthority("Student")
-                .requestMatchers("/teacher/**").hasAuthority("Teacher")
-                .requestMatchers("/admin/**").hasAuthority("Admin")
-                .requestMatchers("/staff/**").hasAuthority("Staff")
-                .requestMatchers("/login", "/verify", "/signup", "/auth/**", "/css/**", "/js/**","/api/classes" ,"/student/home","/teacher/home").permitAll()
+                .requestMatchers("/student/**").hasRole("STUDENT")
+                .requestMatchers("/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/staff/**").hasRole("STAFF")
+                .requestMatchers("/login", "/verify", "/signup", "/favicon.ico", "/auth/**", "/css/**", "/js/**","/api/classes").permitAll()
                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -43,6 +43,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
