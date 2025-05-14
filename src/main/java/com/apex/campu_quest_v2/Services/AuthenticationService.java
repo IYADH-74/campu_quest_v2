@@ -10,19 +10,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.apex.campu_quest_v2.Dto.LoginUserDto;
-import com.apex.campu_quest_v2.Dto.RegisterAdminDto;
-import com.apex.campu_quest_v2.Dto.RegisterStaffDto;
 import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
-import com.apex.campu_quest_v2.Dto.RegisterTeacherDto;
+import com.apex.campu_quest_v2.Dto.RegisterUserDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
 import com.apex.campu_quest_v2.Entities.Admin;
 import com.apex.campu_quest_v2.Entities.Classe;
+import com.apex.campu_quest_v2.Entities.Staff;
 import com.apex.campu_quest_v2.Entities.Student;
+import com.apex.campu_quest_v2.Entities.Teacher;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 
 import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 
 @Service
 public class AuthenticationService {
@@ -31,6 +34,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     public AuthenticationService(
             ClasseRepository classeRepository,
@@ -62,49 +67,48 @@ public class AuthenticationService {
         return userRepository.save(user);
     }
 
-    public User signupAdmin(RegisterAdminDto input) {
-        Admin user = new Admin(input.getFirstName(),
-            input.getLastName(),
-            input.getUsername(),
-            input.getEmail(),
-            passwordEncoder.encode(input.getPassword()),
-        input.getDiscription());
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
-        sendVerificationEmail(user);
-        return userRepository.save(user);
+    public User createUser(RegisterUserDto input) {
+        logger.debug("Creating user with input: {}", input);
+        User user = switch (input.getRole()) {
+            case ROLE_TEACHER -> {
+                String material = StringUtils.defaultIfBlank(input.getExtraInfo(), "Unknown Material");
+                yield new Teacher(
+                    input.getFirstName(),
+                    input.getLastName(),
+                    input.getUsername(),
+                    input.getEmail(),
+                    passwordEncoder.encode(input.getPassword()),
+                    material
+                );
+            }
+            case ROLE_STAFF -> {
+                String department = StringUtils.defaultIfBlank(input.getExtraInfo(), "Unknown Department");
+                yield new Staff(
+                    input.getFirstName(),
+                    input.getLastName(),
+                    input.getUsername(),
+                    input.getEmail(),
+                    passwordEncoder.encode(input.getPassword()),
+                    department
+                );
+            }
+            case ROLE_ADMIN -> {
+                String privileges = StringUtils.defaultIfBlank(input.getExtraInfo(), "Default Privileges");
+                yield new Admin(
+                    input.getFirstName(),
+                    input.getLastName(),
+                    input.getUsername(),
+                    input.getEmail(),
+                    passwordEncoder.encode(input.getPassword()),
+                    privileges
+                );
+            }
+            default -> throw new IllegalArgumentException("Invalid role: " + input.getRole());
+        };
+        user.setEnabled(true); // Automatically activate the user
+        logger.debug("Saved user: {}", userRepository.save(user));
+        return user;
     }
-
-    public User signupStaff(RegisterStaffDto input) {
-        Admin user = new Admin(input.getFirstName(),
-            input.getLastName(),
-            input.getUsername(),
-            input.getEmail(),
-            passwordEncoder.encode(input.getPassword()),
-        input.getDepartement());
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
-        sendVerificationEmail(user);
-        return userRepository.save(user);
-    }
-
-    public User signupStaff(RegisterTeacherDto input) {
-        Admin user = new Admin(input.getFirstName(),
-            input.getLastName(),
-            input.getUsername(),
-            input.getEmail(),
-            passwordEncoder.encode(input.getPassword()),
-        input.getMaterial());
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
-        sendVerificationEmail(user);
-        return userRepository.save(user);
-    }
-
-
 
     public User authenticate(LoginUserDto input) {
         User user = userRepository.findByEmail(input.getEmail())

@@ -1,17 +1,24 @@
 package com.apex.campu_quest_v2.Controllers;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.apex.campu_quest_v2.Dto.LoginUserDto;
 import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
+import com.apex.campu_quest_v2.Dto.RegisterUserDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Responses.LoginResponse;
 import com.apex.campu_quest_v2.Services.AuthenticationService;
 import com.apex.campu_quest_v2.Services.JwtService;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@CrossOrigin(origins = "*") // ALLOWS REQUESTS FROM ALL ORIGINS - OPEN FOR NOW, LOCKDOWN LATER IF NEEDED!
+@CrossOrigin(origins = "http://localhost:5173/") // ALLOWS REQUESTS FROM ALL ORIGINS - OPEN FOR NOW, LOCKDOWN LATER IF NEEDED!
 @RestController
 @RequestMapping("/auth") // ALL AUTH ROUTES UNDER THIS BASE PATH
 public class AuthenticationController {
@@ -71,6 +78,20 @@ public class AuthenticationController {
             return ResponseEntity.ok("Verification code sent");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Failed to resend code: " + e.getMessage());
+        }
+    }
+
+    // =========================
+    // CREATE USER (ADMIN ONLY)
+    // =========================
+    @PostMapping("/create-user")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createUser(@RequestBody RegisterUserDto registerUserDto) {
+        try {
+            User createdUser = authenticationService.createUser(registerUserDto);
+            return ResponseEntity.ok(createdUser);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Failed to create user: " + e.getMessage());
         }
     }
 }

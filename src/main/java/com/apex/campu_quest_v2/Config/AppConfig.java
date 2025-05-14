@@ -14,7 +14,7 @@ import com.apex.campu_quest_v2.Repositories.UserRepository;
 
 @Configuration
 public class AppConfig {
-    private  UserRepository userRepository;
+    private final  UserRepository userRepository;
 
     public AppConfig(UserRepository userRepository){
         this.userRepository=userRepository;
