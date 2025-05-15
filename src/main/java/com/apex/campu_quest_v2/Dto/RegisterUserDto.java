@@ -15,4 +15,13 @@ public class RegisterUserDto {
     private String password;
     private Role role; // Role can be ROLE_TEACHER, ROLE_STAFF, or ROLE_ADMIN
     private String extraInfo; // For role-specific data like material, department, or privileges
+    private Long classeId; // For students to specify their class
+
+    public Long getClasseId() {
+        return classeId;
+    }
+
+    public void setClasseId(Long classeId) {
+        this.classeId = classeId;
+    }
 }

@@ -1,9 +1,14 @@
 package com.apex.campu_quest_v2.Services;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,16 +28,17 @@ import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 
 import jakarta.mail.MessagingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 @Service
 public class AuthenticationService {
+    @Autowired
     private final ClasseRepository classeRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
     private final EmailService emailService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
@@ -103,6 +109,20 @@ public class AuthenticationService {
                     privileges
                 );
             }
+            case ROLE_STUDENT -> {
+                Classe classe = classeRepository.findById(input.getClasseId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid class ID: " + input.getClasseId()));
+                Student student = new Student(
+                    input.getFirstName(),
+                    input.getLastName(),
+                    input.getUsername(),
+                    input.getEmail(),
+                    passwordEncoder.encode(input.getPassword()),
+                    classe
+                );
+                student.setTasks(new ArrayList<>()); // Initialize with an empty task list
+                yield student;
+            }
             default -> throw new IllegalArgumentException("Invalid role: " + input.getRole());
         };
         user.setEnabled(true); // Automatically activate the user
@@ -162,8 +182,6 @@ public class AuthenticationService {
     }
 
     private void sendVerificationEmail(User user) { // TODO: Update with company logo
-        String subject = "Account Verification";
-        String verificationCode = "VERIFICATION CODE " + user.getVerificationCode();
         String htmlMessage = "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -171,16 +189,16 @@ public class AuthenticationService {
                 + "<p style=\"font-size: 16px;\">Please enter the verification code below to continue(btw if this is you bel id like to remind you that you are a B.I.T.C.H):</p>"
                 + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
                 + "<h3 style=\"color: #333;\">Verification Code:</h3>"
-                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + verificationCode + "</p>"
+                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + user.getVerificationCode() + "</p>"
                 + "</div>"
                 + "</div>"
                 + "</body>"
                 + "</html>";
 
         try {
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
+            emailService.sendVerificationEmail(user.getEmail(), "Account Verification", htmlMessage);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
+            logger.error("Failed to send verification email", e);
         }
     }
 
