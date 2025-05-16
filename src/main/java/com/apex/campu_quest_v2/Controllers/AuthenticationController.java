@@ -5,57 +5,45 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.campu_quest_v2.Dto.LoginUserDto;
 import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
-import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Responses.LoginResponse;
 import com.apex.campu_quest_v2.Services.AuthenticationService;
-import com.apex.campu_quest_v2.Services.JwtService;
 
-@CrossOrigin(origins = "http://localhost:5173/") // ALLOWS REQUESTS FROM ALL ORIGINS - OPEN FOR NOW, LOCKDOWN LATER IF NEEDED!
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@CrossOrigin(origins = "http://localhost:5173/")
 @RestController
-@RequestMapping("/auth") // ALL AUTH ROUTES UNDER THIS BASE PATH
+@RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 
-    private final JwtService jwtService;
     private final AuthenticationService authenticationService;
 
-    // INJECT SERVICES THROUGH CONSTRUCTOR
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
-        this.jwtService = jwtService;
+    public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
-    // =========================
-    // SIGNUP (STUDENT ONLY)
-    // =========================
-    @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterStudentDto registerStudentDto) { 
-        User registeredUser = authenticationService.signup(registerStudentDto);
-        return ResponseEntity.ok(registeredUser);
+    @PostMapping("/register")
+    public ResponseEntity<LoginResponse> register(@RequestBody RegisterStudentDto registerStudentDto) {
+        LoginResponse response = authenticationService.register(registerStudentDto);
+        return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // LOGIN (ALL ROLES)
-    // =========================
-    @PostMapping("/login")
+    @PostMapping("/authenticate")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-        User user = authenticationService.authenticate(loginUserDto);
-        String jwtToken = jwtService.generateToken(user);
-        String role = user.getRole().name(); // ASSUMING ENUM
-
-        return ResponseEntity.ok(
-                new LoginResponse(jwtToken, jwtService.getExpirationTime(), role)
-        );
+        LoginResponse response = authenticationService.authenticate(loginUserDto);
+        return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // VERIFY USER ACCOUNT
-    // =========================
+    @PostMapping("/refresh-token")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
+        authenticationService.refreshToken(request, response);
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<?> verifyUser(@RequestBody UserVerifyDto userVerifyDto) {
         try {
@@ -66,13 +54,10 @@ public class AuthenticationController {
         }
     }
 
-    // =========================
-    // RESEND VERIFICATION CODE
-    // =========================
     @PostMapping("/resend")
-    public ResponseEntity<?> resendVerificationCode(@RequestParam String email) {
+    public ResponseEntity<?> resendVerificationCode(@RequestBody UserVerifyDto userVerifyDto) {
         try {
-            authenticationService.resendVerificationCode(email);
+            authenticationService.resendVerificationCode(userVerifyDto.getEmail());
             return ResponseEntity.ok("Verification code sent");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Failed to resend code: " + e.getMessage());

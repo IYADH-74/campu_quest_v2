@@ -2,6 +2,7 @@ package com.apex.campu_quest_v2.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,13 +13,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 
-@Configuration
-public class AppConfig {
-    private final  UserRepository userRepository;
+import lombok.RequiredArgsConstructor;
 
-    public AppConfig(UserRepository userRepository){
-        this.userRepository=userRepository;
-    }
+@Configuration
+@RequiredArgsConstructor
+public class AppConfig {
+    private final UserRepository userRepository;
 
     @Bean
     UserDetailsService userDetailsService() {
@@ -26,7 +26,7 @@ public class AppConfig {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
-        @Bean
+    @Bean
     BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -37,9 +37,13 @@ public class AppConfig {
     }
 
     @Bean
+    public AuditorAware<Integer> auditorAware() {
+        return new ApplicationAuditAware();
+    }
+
+    @Bean
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
         authProvider.setUserDetailsService(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;

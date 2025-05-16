@@ -13,7 +13,7 @@ import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 
 
 @RestController
-@RequestMapping("/classes")
+@RequestMapping("/api/v1/classes")
 @CrossOrigin(origins = "http://localhost:5173/")
 public class ClasseController {
 

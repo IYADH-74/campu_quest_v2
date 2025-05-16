@@ -2,9 +2,11 @@ package com.apex.campu_quest_v2.Dto;
 
 import java.util.List;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class CreateTeacherDto {
     private String firstName;
     private String lastName;

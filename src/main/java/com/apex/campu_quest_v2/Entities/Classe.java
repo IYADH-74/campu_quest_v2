@@ -24,7 +24,7 @@ public class Classe {
 
     @Column(nullable = false)
     private String className;
-
+    
     private List<Long> teacherIds = new ArrayList<>();
     private List<Long> studentIds = new ArrayList<>();
 

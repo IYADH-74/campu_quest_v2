@@ -13,16 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Services.UserService;
 
-@RequestMapping("/users")
+import lombok.RequiredArgsConstructor;
+
+@PreAuthorize("hasAnyRole(ADMIN.name(), STUDENT.name(), TEACHER.name(), STAFF.name())")
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 @RestController
 public class UserController {
     private final UserService userService;
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('Admin', 'Student', 'Teacher', 'Staff')")
     public ResponseEntity<User> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
@@ -32,7 +32,7 @@ public class UserController {
 
     
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<List<User>> allUsers() {
         List <User> users = userService.allUsers();
         return ResponseEntity.ok(users);
