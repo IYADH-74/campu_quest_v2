@@ -1,8 +1,5 @@
 package com.apex.campu_quest_v2.Entities;
 
-
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +10,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,31 +20,30 @@ import lombok.Setter;
 @Table(name = "students")
 public class Student extends User{
 
-    @ManyToOne
-    @JoinColumn(name = "classe_id")
-    private Classe classe;
+    @Column(name = "classe_id", nullable = false)
+    private Long classeId;
+
     @Column(nullable = false)
     private int level;
+
     @Column(nullable = false)
     private int xp;
 
-@ManyToMany
-@JoinTable(
-  name = "student_tasks",
-  joinColumns = @JoinColumn(name = "student_id"),
-  inverseJoinColumns = @JoinColumn(name = "task_id")
-)
-private List<Task> tasks = new ArrayList<>();
-
-
+    @ManyToMany
+    @JoinTable(
+      name = "student_tasks",
+      joinColumns = @JoinColumn(name = "student_id"),
+      inverseJoinColumns = @JoinColumn(name = "task_id")
+    )
+    private List<Task> tasks = new ArrayList<>();
 
     public Student() {
         super();
     }
 
-    public Student(String firstName, String lastName, String username, String email, String password , Classe classe) {
+    public Student(String firstName, String lastName, String username, String email, String password , Long classeId) {
         super(firstName, lastName, username,email, password,Role.ROLE_STUDENT);
-        this.classe = classe;
+        this.classeId = classeId;
         this.level = 0;
         this.xp = 0;
     }

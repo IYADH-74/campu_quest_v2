@@ -57,12 +57,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = true)
-    private String material; // For teachers
-
-    @Column(nullable = true)
-    private String department; // For staff
-
     public User() {}
 
     public User(String firstName,String lastName, String username,String email, String password, Role role) {

@@ -8,7 +8,6 @@ import java.util.Random;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +18,6 @@ import com.apex.campu_quest_v2.Dto.RegisterStudentDto;
 import com.apex.campu_quest_v2.Dto.RegisterUserDto;
 import com.apex.campu_quest_v2.Dto.UserVerifyDto;
 import com.apex.campu_quest_v2.Entities.Admin;
-import com.apex.campu_quest_v2.Entities.Classe;
 import com.apex.campu_quest_v2.Entities.Staff;
 import com.apex.campu_quest_v2.Entities.Student;
 import com.apex.campu_quest_v2.Entities.Teacher;
@@ -31,16 +29,11 @@ import jakarta.mail.MessagingException;
 
 @Service
 public class AuthenticationService {
-    @Autowired
     private final ClasseRepository classeRepository;
     private final UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
-
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     public AuthenticationService(
@@ -50,22 +43,21 @@ public class AuthenticationService {
             PasswordEncoder passwordEncoder,
             EmailService emailService) {
         this.classeRepository = classeRepository;
-        this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
     }
 
     public User signup(RegisterStudentDto input) {
-        Classe classe = classeRepository.findById(input.getClasseId())
-                .orElseThrow(() -> new IllegalArgumentException("Classe not found with ID: " + input.getClasseId()));
         Student user = new Student(
             input.getFirstName(),
             input.getLastName(),
             input.getUsername(),
             input.getEmail(),
             passwordEncoder.encode(input.getPassword()),
-            classe);
+            input.getClasseId()
+        );
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
@@ -110,24 +102,21 @@ public class AuthenticationService {
                 );
             }
             case ROLE_STUDENT -> {
-                Classe classe = classeRepository.findById(input.getClasseId())
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid class ID: " + input.getClasseId()));
                 Student student = new Student(
                     input.getFirstName(),
                     input.getLastName(),
                     input.getUsername(),
                     input.getEmail(),
                     passwordEncoder.encode(input.getPassword()),
-                    classe
+                    input.getClasseId()
                 );
                 student.setTasks(new ArrayList<>()); // Initialize with an empty task list
                 yield student;
             }
-            default -> throw new IllegalArgumentException("Invalid role: " + input.getRole());
         };
-        user.setEnabled(true); // Automatically activate the user
+        user.setEnabled(true); 
         logger.debug("Saved user: {}", userRepository.save(user));
-        return user;
+        return userRepository.save(user);
     }
 
     public User authenticate(LoginUserDto input) {

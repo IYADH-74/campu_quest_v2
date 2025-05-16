@@ -13,9 +13,9 @@ public class RegisterUserDto {
     private String username;
     private String email;
     private String password;
-    private Role role; // Role can be ROLE_TEACHER, ROLE_STAFF, or ROLE_ADMIN
-    private String extraInfo; // For role-specific data like material, department, or privileges
-    private Long classeId; // For students to specify their class
+    private Role role; 
+    private String extraInfo; 
+    private Long classeId; 
 
     public Long getClasseId() {
         return classeId;

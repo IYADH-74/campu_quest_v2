@@ -5,11 +5,11 @@ import java.util.List;
 
 import com.apex.campu_quest_v2.Enums.Role;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,15 +24,10 @@ public class Teacher extends User {
     @Column
     private String material;
     
-    
-    
-    @ManyToMany
-    @JoinTable(
-        name = "teacher_classes",
-        joinColumns = @JoinColumn(name = "teacher_id"),
-        inverseJoinColumns = @JoinColumn(name = "class_id")
-    )
-    private List<Classe> classes = new ArrayList<>();
+    @ElementCollection
+    @CollectionTable(name = "teacher_class_ids", joinColumns = @JoinColumn(name = "teacher_id"))
+    @Column(name = "class_id")
+    private List<Long> classIds = new ArrayList<>();
 
     public Teacher() {
         super();
