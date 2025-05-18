@@ -3,6 +3,7 @@ package com.apex.campu_quest_v2.Controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apex.campu_quest_v2.Dto.AssignMandatoryTaskDto;
 import com.apex.campu_quest_v2.Dto.TaskSubmissionDto;
 import com.apex.campu_quest_v2.Entities.StudentTask;
 import com.apex.campu_quest_v2.Entities.Task;
@@ -65,5 +67,13 @@ public class TaskController {
     public ResponseEntity<?> rejectTask(@PathVariable Long studentTaskId) {
         taskService.rejectTask(studentTaskId);
         return ResponseEntity.ok().build();
+    }
+
+    // Assign a mandatory (class) task (teacher only)
+    @PreAuthorize("hasRole('TEACHER')")
+    @PostMapping("/mandatory")
+    public ResponseEntity<Task> assignMandatoryTask(@RequestBody AssignMandatoryTaskDto dto, @RequestParam Integer teacherId) {
+        Task task = taskService.assignMandatoryTask(dto, teacherId);
+        return ResponseEntity.ok(task);
     }
 }
