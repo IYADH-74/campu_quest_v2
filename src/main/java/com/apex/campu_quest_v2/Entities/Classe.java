@@ -1,8 +1,5 @@
 package com.apex.campu_quest_v2.Entities;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,23 +14,16 @@ import lombok.Setter;
 @Entity
 @Table(name = "classes")
 public class Classe {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(nullable = false)
     private String className;
-    
-    private List<Long> teacherIds = new ArrayList<>();
-    private List<Long> studentIds = new ArrayList<>();
 
     public Classe() {}
 
     public Classe(String name) {
         this.className = name;
     }
-
-
-    
 }

@@ -2,7 +2,6 @@ package com.apex.campu_quest_v2.Entities;
 
 import java.time.LocalDate;
 
-import com.apex.campu_quest_v2.Enums.TaskStatus;
 import com.apex.campu_quest_v2.Enums.TaskType;
 
 import jakarta.persistence.Column;
@@ -10,13 +9,22 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -24,9 +32,9 @@ import lombok.Setter;
 public class Task {
 
 
-     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    @GeneratedValue
+    private Integer id;
 
     @Column(nullable = false)
     private String title;
@@ -41,9 +49,6 @@ public class Task {
     private boolean mandatory;
 
     @Column(nullable = false)
-    private boolean assignedToGroup;
-
-    @Column(nullable = false)
     private int baseXP;
 
     private int bonusXP;
@@ -53,28 +58,31 @@ public class Task {
     @Column(nullable = false)
     private Long assignedByUserId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TaskStatus status = TaskStatus.Available;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TaskType taskType;
 
 
+    @ManyToMany
+    @JoinTable(
+        name = "task_classes",
+        joinColumns = @JoinColumn(name = "task_id"),
+        inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    private java.util.List<Classe> classes = new java.util.ArrayList<>();
 
-    public Task() {}
 
-    public Task(String title, String description, int tier, boolean mandatory, boolean assignedToGroup,int baseXP, int bonusXP, LocalDate deadline, TaskStatus status, TaskType taskType, Long assignedByUserId) {
+
+    public Task(String title, String description, int tier, boolean mandatory, boolean assignedToGroup,int baseXP, int bonusXP, LocalDate deadline, TaskType taskType, Long assignedByUserId) {
         this.title = title;
         this.description = description;
         this.tier = tier;
         this.mandatory = mandatory;
-        this.assignedToGroup = assignedToGroup;
         this.baseXP = baseXP;
         this.bonusXP = bonusXP;
         this.deadline = deadline;
-        this.status = status;
         this.taskType = taskType;
         this.assignedByUserId = assignedByUserId;
     }

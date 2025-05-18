@@ -58,6 +58,7 @@ public class AuthenticationService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .role(savedUser.getRole().name())
+                .id(savedUser.getId())
                 .build();
     }
 
@@ -81,6 +82,7 @@ public class AuthenticationService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .role(user.getRole().name())
+                .id(user.getId())
                 .build();
     }
 
@@ -180,6 +182,7 @@ public class AuthenticationService {
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
                         .role(user.getRole().name())
+                        .id(user.getId())
                         .build();
                 new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
             }

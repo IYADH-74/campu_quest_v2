@@ -15,23 +15,20 @@ import com.apex.campu_quest_v2.Services.UserService;
 
 import lombok.RequiredArgsConstructor;
 
-@PreAuthorize("hasAnyRole(ADMIN.name(), STUDENT.name(), TEACHER.name(), STAFF.name())")
+
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @RestController
 public class UserController {
     private final UserService userService;
-
+    @PreAuthorize("hasAnyRole(ROLE_ADMIN,ROLE_STUDENT, ROLE_TEACHER, ROLE_STAFF)")
     @GetMapping("/me")
     public ResponseEntity<User> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         return ResponseEntity.ok(currentUser);
     }
-
-
-    
-
+    @PreAuthorize("hasRole(ROLE_ADMIN)")
     @GetMapping("/all")
     public ResponseEntity<List<User>> allUsers() {
         List <User> users = userService.allUsers();

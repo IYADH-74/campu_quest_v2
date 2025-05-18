@@ -23,8 +23,10 @@ import com.apex.campu_quest_v2.Dto.UpdateAdminDto;
 import com.apex.campu_quest_v2.Dto.UpdateStaffDto;
 import com.apex.campu_quest_v2.Dto.UpdateStudentDto;
 import com.apex.campu_quest_v2.Dto.UpdateTeacherDto;
+import com.apex.campu_quest_v2.Entities.Classe;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.Role;
+import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ClasseRepository classeRepository;
 
     // Create Teacher
     @PostMapping("/teachers")
@@ -47,8 +50,12 @@ public class AdminController {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(Role.TEACHER)
                 .material(dto.getMaterial())
+                .enabled(true)
                 .build();
-        user.setClassIds(dto.getClassIds());
+        if (dto.getClassIds() != null && !dto.getClassIds().isEmpty()) {
+            List<Classe> classes = classeRepository.findAllById(dto.getClassIds());
+            user.setTeacherClasses(classes);
+        }
         return ResponseEntity.ok(userRepository.save(user));
     }
 
@@ -62,6 +69,7 @@ public class AdminController {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(Role.STAFF)
                 .departement(dto.getDepartement())
+                .enabled(true)
                 .build();
         return ResponseEntity.ok(userRepository.save(user));
     }
@@ -78,6 +86,7 @@ public class AdminController {
                 .classeId(dto.getClasseId())
                 .level(0)
                 .xp(0)
+                .enabled(true)
                 .build();
         return ResponseEntity.ok(userRepository.save(user));
     }
@@ -92,6 +101,7 @@ public class AdminController {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(Role.ADMIN)
                 .privilegesDescription(dto.getPrivilegesDescription())
+                .enabled(true)
                 .build();
         return ResponseEntity.ok(userRepository.save(user));
     }
@@ -107,7 +117,12 @@ public class AdminController {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setMaterial(dto.getMaterial());
-        user.setClassIds(dto.getClassIds());
+        if (dto.getClassIds() != null && !dto.getClassIds().isEmpty()) {
+            List<Classe> classes = classeRepository.findAllById(dto.getClassIds());
+            user.setTeacherClasses(classes);
+        } else {
+            user.setTeacherClasses(new java.util.ArrayList<>());
+        }
         return ResponseEntity.ok(userRepository.save(user));
     }
 

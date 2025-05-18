@@ -75,9 +75,9 @@ public class User implements UserDetails {
     @Column
     private Integer xp;
 
-    @ManyToMany
-    @JoinTable(name = "student_tasks", joinColumns = @JoinColumn(name = "student_id"), inverseJoinColumns = @JoinColumn(name = "task_id"))
-    private List<Task> tasks = new java.util.ArrayList<>();
+    @OneToMany(mappedBy = "student")
+    @Builder.Default
+    private java.util.List<StudentTask> studentTasks = new java.util.ArrayList<>();
 
     @Column
     private String material;
@@ -86,8 +86,14 @@ public class User implements UserDetails {
     @Column
     private String privilegesDescription;
 
-    @Column(name = "class_ids")
-    private String classIdsCsv;
+    @ManyToMany
+    @JoinTable(
+        name = "teacher_classes",
+        joinColumns = @JoinColumn(name = "teacher_id"),
+        inverseJoinColumns = @JoinColumn(name = "class_id")
+    )
+    @Builder.Default
+    private List<Classe> teacherClasses = new java.util.ArrayList<>();
 
     public User(String firstName, String lastName, String email, String password, Role role) {
         this.firstName = firstName;
@@ -100,28 +106,6 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
-    }
-
-    public List<Long> getClassIds() {
-        if (classIdsCsv == null || classIdsCsv.isEmpty())
-            return List.of();
-        String[] parts = classIdsCsv.split(",");
-        List<Long> ids = new java.util.ArrayList<>();
-        for (String p : parts) {
-            try {
-                ids.add(Long.parseLong(p.trim()));
-            } catch (Exception ignored) {
-            }
-        }
-        return ids;
-    }
-
-    public void setClassIds(List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            this.classIdsCsv = null;
-        } else {
-            this.classIdsCsv = ids.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
-        }
     }
 
     @Override

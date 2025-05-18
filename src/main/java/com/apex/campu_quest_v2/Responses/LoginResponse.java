@@ -18,4 +18,6 @@ public class LoginResponse {
     private String refreshToken;
     @JsonProperty("role")
     private String role;
+    @JsonProperty("id")
+    private Integer id;
 }
