@@ -12,14 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.campu_quest_v2.Entities.Classe;
-import com.apex.campu_quest_v2.Entities.Task;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.Role;
-import com.apex.campu_quest_v2.Enums.TaskType;
 import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.TaskRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
@@ -76,25 +73,19 @@ public class StaffController {
         return ResponseEntity.ok(userRepository.save(teacher));
     }
 
-    // 6. Publish a global (optional) task
-    @PostMapping("/tasks/global")
-    public ResponseEntity<Task> publishGlobalTask(@RequestBody Task task) {
-        task.setTaskType(TaskType.Global_Challenge); // or other global type as needed
-        return ResponseEntity.ok(taskRepository.save(task));
+    // 6. Get all teachers
+    @GetMapping("/teachers")
+    public List<User> getAllTeachers() {
+        return userRepository.findAll().stream()
+            .filter(u -> u.getRole() == Role.TEACHER)
+            .toList();
     }
 
-    // 7. List all global tasks
-    @GetMapping("/tasks/global")
-    public List<Task> getAllGlobalTasks() {
-        return taskRepository.findAll().stream().filter(t -> t.getTaskType().name().startsWith("Global")).toList();
-    }
-
-    // 8. List global tasks published by this staff
-    @GetMapping("/tasks/my-global")
-    public List<Task> getMyGlobalTasks(@RequestParam Long staffId) {
+    // 7. Get all tasks assigned by a teacher
+    @GetMapping("/teachers/{teacherId}/tasks")
+    public List<com.apex.campu_quest_v2.Entities.Task> getAllTasksAssignedByTeacher(@PathVariable Long teacherId) {
         return taskRepository.findAll().stream()
-                .filter(t -> t.getTaskType().name().startsWith("Global"))
-                .filter(t -> t.getAssignedByUserId() != null && t.getAssignedByUserId().equals(staffId))
-                .toList();
+            .filter(t -> t.getAssignedByUserId() != null && t.getAssignedByUserId().equals(teacherId))
+            .toList();
     }
 }

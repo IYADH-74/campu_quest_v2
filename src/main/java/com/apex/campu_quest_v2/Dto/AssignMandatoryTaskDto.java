@@ -8,7 +8,7 @@ public class AssignMandatoryTaskDto {
     private int tier;
     private int baseXP;
     private int bonusXP;
-    private String deadline; // ISO date string
+    private String deadline; 
     private List<Long> classIds;
 
     public String getTitle() { return title; }
@@ -26,3 +26,5 @@ public class AssignMandatoryTaskDto {
     public List<Long> getClassIds() { return classIds; }
     public void setClassIds(List<Long> classIds) { this.classIds = classIds; }
 }
+
+
