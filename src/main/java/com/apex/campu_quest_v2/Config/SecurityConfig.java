@@ -62,8 +62,10 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(WHITE_LIST_URL).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole(ADMIN.name())
+                        .requestMatchers(GET,"/api/v1/users/all").hasRole(ADMIN.name())
                         .requestMatchers(GET,"/api/v1/admin/**").hasAuthority(ADMIN_READ.name())
                         .requestMatchers(POST,"/api/v1/admin/**").hasAuthority(ADMIN_CREATE.name())
                         .requestMatchers(PUT,"/api/v1/admin/**").hasAuthority(ADMIN_UPDATE.name())
@@ -88,10 +90,6 @@ public class SecurityConfig {
                         .requestMatchers(POST,"/api/v1/student/**").hasAuthority(ADMIN_CREATE.name())
                         .requestMatchers(PUT,"/api/v1/student/**").hasAuthority(ADMIN_UPDATE.name())
                         .requestMatchers(DELETE,"/api/v1/student/**").hasAuthority(ADMIN_DELETE.name())
-                        .requestMatchers(GET,"/api/v1/classes/**").hasAnyRole(STAFF.name(),ADMIN.name())
-                        .requestMatchers(POST,"/api/v1/classes/**").hasAnyRole(STAFF.name(),ADMIN.name())
-                        .requestMatchers(PUT,"/api/v1/classes/**").hasAnyRole(STAFF.name(),ADMIN.name())
-                        .requestMatchers(DELETE,"/api/v1/classes/**").hasAnyRole(STAFF.name(),ADMIN.name())
                         .requestMatchers(GET,"/api/v1/tasks/**").hasAnyRole(STAFF.name(),ADMIN.name(),TEACHER.name(),STUDENT.name())
                         .requestMatchers(POST,"/api/v1/tasks/**").hasAnyRole(STAFF.name(),ADMIN.name(),TEACHER.name(),STUDENT.name())
                         .requestMatchers(DELETE,"/api/v1/tasks/**").hasAnyRole(STAFF.name(),ADMIN.name(),TEACHER.name(),STUDENT.name())

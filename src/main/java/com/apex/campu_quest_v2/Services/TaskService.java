@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ import com.apex.campu_quest_v2.Repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@EnableScheduling
 @RequiredArgsConstructor
 public class TaskService {
     private final TaskRepository taskRepository;
@@ -34,6 +37,10 @@ public class TaskService {
     // XP chart for levels
     private static final int[] LEVEL_TOTAL_XP = {0, 5000, 10500, 16500, 23000, 30000, 37500, 45500, 54500, 64500, 75500, 87500, 101000, 116000, 132500, 150500, 170000, 191000, 213500, 237500, 263500};
     private static final int[] TIER_XP = {2000, 3000, 4000, 5000, 6000};
+
+    // Global boost flag for XP (default false)
+    private boolean globalBoostActive = false;
+    private LocalDateTime globalBoostActivatedAt = null;
 
     // Publish a global task (staff/teacher)
     public Task publishGlobalTask(Task task, Long publisherId) {
@@ -93,6 +100,10 @@ public class TaskService {
         StudentTask st = studentTaskRepository.findById(studentTaskId).orElseThrow();
         st.setStatus(com.apex.campu_quest_v2.Enums.TaskStatus.Complete);
         int xp = getXpForTier(st.getTask().getTier());
+        // Apply global boost if active and global task
+        if (st.getTask().getTaskType().name().startsWith("Global") && isGlobalBoostActive()) {
+            xp = (int) Math.round(xp * 1.2);
+        }
         st.setXpAwarded(xp);
         st.setRejected(false);
         // Update student XP/level
@@ -189,6 +200,32 @@ public class TaskService {
             userRepository.save(student);
             studentTaskRepository.save(st);
         }
+    }
+
+    public void applyGlobalBoost() {
+        globalBoostActive = true;
+        globalBoostActivatedAt = LocalDateTime.now();
+    }
+
+    public boolean isGlobalBoostActive() {
+        // Auto-deactivate if more than 24h passed
+        if (globalBoostActive && globalBoostActivatedAt != null &&
+            globalBoostActivatedAt.plusHours(24).isBefore(LocalDateTime.now())) {
+            globalBoostActive = false;
+            globalBoostActivatedAt = null;
+        }
+        return globalBoostActive;
+    }
+
+    public void removeGlobalBoost() {
+        globalBoostActive = false;
+        globalBoostActivatedAt = null;
+    }
+
+    // Scheduled check every hour to auto-deactivate boost
+    @Scheduled(fixedRate = 60 * 60 * 1000) // every hour
+    public void checkGlobalBoostExpiry() {
+        isGlobalBoostActive(); // triggers auto-deactivation if needed
     }
 
     // Core logic methods will be added here (assign, accept, submit, validate, etc.)

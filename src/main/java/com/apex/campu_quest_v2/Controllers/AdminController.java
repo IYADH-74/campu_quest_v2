@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.campu_quest_v2.Dto.CreateAdminDto;
@@ -23,22 +25,26 @@ import com.apex.campu_quest_v2.Dto.UpdateAdminDto;
 import com.apex.campu_quest_v2.Dto.UpdateStaffDto;
 import com.apex.campu_quest_v2.Dto.UpdateStudentDto;
 import com.apex.campu_quest_v2.Dto.UpdateTeacherDto;
+import com.apex.campu_quest_v2.Dto.UserSummaryDto;
 import com.apex.campu_quest_v2.Entities.Classe;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.Role;
 import com.apex.campu_quest_v2.Repositories.ClasseRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
+import com.apex.campu_quest_v2.Services.TaskService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/admin")
+@CrossOrigin(origins = "http://localhost:5173/")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ClasseRepository classeRepository;
+    private final TaskService taskService;
 
     // Create Teacher
     @PostMapping("/teachers")
@@ -194,5 +200,46 @@ public class AdminController {
     @GetMapping("/admins")
     public List<User> getAllAdmins() {
         return userRepository.findAll().stream().filter(u -> u.getRole() == Role.ADMIN).toList();
+    }
+
+    // Get all users (summary) for admin
+    @GetMapping("/users/summary")
+    public ResponseEntity<List<UserSummaryDto>> getAllUsersSummary() {
+        List<UserSummaryDto> users = userRepository.findAll().stream()
+            .map(u -> {
+                UserSummaryDto dto = new UserSummaryDto();
+                dto.setId(u.getId() != null ? u.getId().longValue() : null);
+                dto.setEmail(u.getEmail());
+                dto.setFirstName(u.getFirstName());
+                dto.setLastName(u.getLastName());
+                dto.setRole(u.getRole());
+                return dto;
+            })
+            .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    // Endpoint to apply global XP boost for all students
+    @PostMapping("/apply-global-boost")
+    public ResponseEntity<?> applyGlobalBoost() {
+        taskService.applyGlobalBoost();
+        return ResponseEntity.ok().build();
+    }
+
+    // Endpoint to check if global boost is active
+    @GetMapping("/global-boost-status")
+    public ResponseEntity<Boolean> getGlobalBoostStatus() {
+        return ResponseEntity.ok(taskService.isGlobalBoostActive());
+    }
+
+    // Endpoint to toggle global boost (activate or deactivate)
+    @PostMapping("/toggle-global-boost")
+    public ResponseEntity<?> toggleGlobalBoost(@RequestParam boolean enable) {
+        if (enable) {
+            taskService.applyGlobalBoost();
+        } else {
+            taskService.removeGlobalBoost();
+        }
+        return ResponseEntity.ok().build();
     }
 }
