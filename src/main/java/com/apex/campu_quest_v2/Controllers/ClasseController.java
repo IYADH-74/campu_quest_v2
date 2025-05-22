@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apex.campu_quest_v2.Dto.ClasseListDto;
 import com.apex.campu_quest_v2.Dto.CreateClasseDto;
 import com.apex.campu_quest_v2.Dto.TaskSummaryDto;
 import com.apex.campu_quest_v2.Dto.UpdateClasseDto;
@@ -27,7 +28,6 @@ import com.apex.campu_quest_v2.Repositories.UserRepository;
 @RestController
 @RequestMapping("/api/v1/classes")
 @CrossOrigin(origins = "http://localhost:5173/")
-@PreAuthorize("hasAnyRole('ADMIN','STAFF')")
 public class ClasseController {
     private final ClasseRepository classeRepository;
 
@@ -69,6 +69,14 @@ public class ClasseController {
     @PreAuthorize("hasAnyRole('ADMIN','STAFF')")
     public List<Classe> getAllClasses() {
         return classeRepository.findAll();
+    }
+
+    // List all classes (public, DTO)
+    @GetMapping("/all")
+    public List<ClasseListDto> getAllClassesPublic() {
+        return classeRepository.findAll().stream()
+            .map(classe -> new ClasseListDto(classe.getId(), classe.getClassName()))
+            .toList();
     }
 
     // List all tasks (mandatory and global) for admin
