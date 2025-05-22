@@ -19,12 +19,23 @@ import com.apex.campu_quest_v2.Entities.Task;
 import com.apex.campu_quest_v2.Services.TaskService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.apex.campu_quest_v2.Entities.User;
+import com.apex.campu_quest_v2.Enums.TaskStatus;
+import com.apex.campu_quest_v2.Enums.TaskType;
+import com.apex.campu_quest_v2.Repositories.StudentTaskRepository;
+import com.apex.campu_quest_v2.Repositories.UserRepository;
+import com.apex.campu_quest_v2.Services.UserService;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
 @RequiredArgsConstructor
 public class TaskController {
     private final TaskService taskService;
+    private final StudentTaskRepository studentTaskRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
     // Publish a global task (staff/teacher)
     @PostMapping("/global")
@@ -75,5 +86,30 @@ public class TaskController {
     public ResponseEntity<Task> assignMandatoryTask(@RequestBody AssignMandatoryTaskDto dto, @RequestParam Integer teacherId) {
         Task task = taskService.assignMandatoryTask(dto, teacherId);
         return ResponseEntity.ok(task);
+    }
+
+    @GetMapping("/optional-task-slots")
+    public ResponseEntity<?> getStudentOptionalTaskSlots() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Integer lvlObj = currentUser.getLevel();
+        int level = (lvlObj == null) ? 0 : lvlObj;
+        int maxSlots = userService.getOptionalTaskSlotsForLevel(level);
+        long usedSlots = studentTaskRepository.findByStudentId(currentUser.getId())
+            .stream()
+            .filter(st -> st.getTask().getTaskType() != null &&
+                         (st.getTask().getTaskType() == TaskType.Global_Challenge ||
+                          st.getTask().getTaskType() == TaskType.Global_Extra_Course ||
+                          st.getTask().getTaskType() == TaskType.Global_Envent_Attendance ||
+                          st.getTask().getTaskType() == TaskType.Global_Certification)
+            )
+            .filter(st -> st.getStatus() == TaskStatus.Pending_Validation)
+            .count();
+        int availableSlots = maxSlots - (int) usedSlots;
+        return ResponseEntity.ok(new java.util.HashMap<String, Integer>() {{
+            put("maxSlots", maxSlots);
+            put("usedSlots", (int) usedSlots);
+            put("availableSlots", availableSlots);
+        }});
     }
 }

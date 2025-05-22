@@ -100,7 +100,6 @@ public class TaskService {
         StudentTask st = studentTaskRepository.findById(studentTaskId).orElseThrow();
         st.setStatus(com.apex.campu_quest_v2.Enums.TaskStatus.Complete);
         int xp = getXpForTier(st.getTask().getTier());
-        // Apply global boost if active and global task
         if (st.getTask().getTaskType().name().startsWith("Global") && isGlobalBoostActive()) {
             xp = (int) Math.round(xp * 1.2);
         }

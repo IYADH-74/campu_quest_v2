@@ -32,13 +32,13 @@ public class StaffController {
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
 
-    // 1. Create a class
+    //Create a class
     @PostMapping("/classes")
     public ResponseEntity<Classe> createClass(@RequestBody Classe classe) {
         return ResponseEntity.ok(classeRepository.save(classe));
     }
 
-    // 2. Update a class
+    //Update a class
     @PutMapping("/classes/{id}")
     public ResponseEntity<Classe> updateClass(@PathVariable Long id, @RequestBody Classe updated) {
         Optional<Classe> opt = classeRepository.findById(id);
@@ -48,7 +48,7 @@ public class StaffController {
         return ResponseEntity.ok(classeRepository.save(classe));
     }
 
-    // 3. Delete a class
+    //Delete a class
     @DeleteMapping("/classes/{id}")
     public ResponseEntity<?> deleteClass(@PathVariable Long id) {
         if (!classeRepository.existsById(id)) return ResponseEntity.notFound().build();
@@ -56,13 +56,13 @@ public class StaffController {
         return ResponseEntity.ok().build();
     }
 
-    // 4. List all classes
+    //List all classes
     @GetMapping("/classes")
     public List<Classe> getAllClasses() {
         return classeRepository.findAll();
     }
 
-    // 5. Assign classes to teacher
+    //Assign classes to teacher
     @PostMapping("/teachers/{teacherId}/assign-classes")
     public ResponseEntity<User> assignClassesToTeacher(@PathVariable Integer teacherId, @RequestBody List<Long> classIds) {
         Optional<User> opt = userRepository.findById(teacherId);
@@ -73,7 +73,7 @@ public class StaffController {
         return ResponseEntity.ok(userRepository.save(teacher));
     }
 
-    // 6. Get all teachers
+    //Get all teachers
     @GetMapping("/teachers")
     public List<User> getAllTeachers() {
         return userRepository.findAll().stream()
@@ -81,7 +81,7 @@ public class StaffController {
             .toList();
     }
 
-    // 7. Get all tasks assigned by a teacher
+    //Get all tasks assigned by a teacher
     @GetMapping("/teachers/{teacherId}/tasks")
     public List<com.apex.campu_quest_v2.Entities.Task> getAllTasksAssignedByTeacher(@PathVariable Long teacherId) {
         return taskRepository.findAll().stream()

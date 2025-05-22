@@ -184,7 +184,7 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
-    // List all users by type
+    // List all users by type ps: wont be needed sine ce have an all users endpoint
     @GetMapping("/teachers")
     public List<User> getAllTeachers() {
         return userRepository.findAll().stream().filter(u -> u.getRole() == Role.TEACHER).toList();
@@ -219,12 +219,7 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
-    // Endpoint to apply global XP boost for all students
-    @PostMapping("/apply-global-boost")
-    public ResponseEntity<?> applyGlobalBoost() {
-        taskService.applyGlobalBoost();
-        return ResponseEntity.ok().build();
-    }
+
 
     // Endpoint to check if global boost is active
     @GetMapping("/global-boost-status")

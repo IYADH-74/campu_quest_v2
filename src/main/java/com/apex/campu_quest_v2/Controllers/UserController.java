@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apex.campu_quest_v2.Dto.LeaderboardEntryDto;
+import com.apex.campu_quest_v2.Dto.UserSummaryDto;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.Role;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
@@ -28,10 +29,18 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     @GetMapping("/me")
-    public ResponseEntity<User> authenticatedUser() {
+    public ResponseEntity<UserSummaryDto> authenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(currentUser);
+        Long id = currentUser.getId() != null ? currentUser.getId().longValue() : null;
+        UserSummaryDto dto = new UserSummaryDto(
+            id,
+            currentUser.getEmail(),
+            currentUser.getFirstName(),
+            currentUser.getLastName(),
+            currentUser.getRole()
+        );
+        return ResponseEntity.ok(dto);
     }
     @GetMapping("/leaderboard")
     public List<LeaderboardEntryDto> getStudentLeaderboard() {
