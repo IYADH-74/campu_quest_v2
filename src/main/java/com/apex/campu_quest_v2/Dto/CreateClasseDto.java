@@ -1,8 +1,8 @@
-package com.apex.campu_quest_v2.Dto;
+    package com.apex.campu_quest_v2.Dto;
 
-import lombok.Data;
+    import lombok.Data;
 
-@Data
-public class CreateClasseDto {
-    private String className;
-}
+    @Data
+    public class CreateClasseDto {
+        private String className;
+    }

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,17 +18,15 @@ import com.apex.campu_quest_v2.Dto.AssignMandatoryTaskDto;
 import com.apex.campu_quest_v2.Dto.TaskSubmissionDto;
 import com.apex.campu_quest_v2.Entities.StudentTask;
 import com.apex.campu_quest_v2.Entities.Task;
-import com.apex.campu_quest_v2.Services.TaskService;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.TaskStatus;
 import com.apex.campu_quest_v2.Enums.TaskType;
 import com.apex.campu_quest_v2.Repositories.StudentTaskRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
+import com.apex.campu_quest_v2.Services.TaskService;
 import com.apex.campu_quest_v2.Services.UserService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -43,10 +43,20 @@ public class TaskController {
         return ResponseEntity.ok(taskService.publishGlobalTask(task, publisherId));
     }
 
-    // List all global tasks
+    // List all global tasks by publisherId with a controlled response
     @GetMapping("/global")
-    public List<Task> getAllGlobalTasks() {
-        return taskService.getAllGlobalTasks();
+    public ResponseEntity<?> getAllGlobalTasks(@RequestParam(value = "publisherId", required = false) Long publisherId) {
+        List<Task> tasks = taskService.getAllGlobalTasks();
+        List<Task> filteredTasks = tasks;
+        if (publisherId != null) {
+            filteredTasks = tasks.stream()
+                .filter(t -> t.getAssignedByUserId() != null && t.getAssignedByUserId().equals(publisherId))
+                .toList();
+        }
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("count", filteredTasks.size());
+        response.put("tasks", filteredTasks);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/global/{taskId}/accept")

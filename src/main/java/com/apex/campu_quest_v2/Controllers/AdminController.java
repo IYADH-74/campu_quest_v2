@@ -21,6 +21,7 @@ import com.apex.campu_quest_v2.Dto.CreateAdminDto;
 import com.apex.campu_quest_v2.Dto.CreateStaffDto;
 import com.apex.campu_quest_v2.Dto.CreateStudentDto;
 import com.apex.campu_quest_v2.Dto.CreateTeacherDto;
+import com.apex.campu_quest_v2.Dto.TaskSummaryDto;
 import com.apex.campu_quest_v2.Dto.UpdateAdminDto;
 import com.apex.campu_quest_v2.Dto.UpdateStaffDto;
 import com.apex.campu_quest_v2.Dto.UpdateStudentDto;
@@ -30,6 +31,7 @@ import com.apex.campu_quest_v2.Entities.Classe;
 import com.apex.campu_quest_v2.Entities.User;
 import com.apex.campu_quest_v2.Enums.Role;
 import com.apex.campu_quest_v2.Repositories.ClasseRepository;
+import com.apex.campu_quest_v2.Repositories.TaskRepository;
 import com.apex.campu_quest_v2.Repositories.UserRepository;
 import com.apex.campu_quest_v2.Services.TaskService;
 
@@ -45,6 +47,7 @@ public class AdminController {
     private final PasswordEncoder passwordEncoder;
     private final ClasseRepository classeRepository;
     private final TaskService taskService;
+    private final TaskRepository taskRepository;
 
     // Create Teacher
     @PostMapping("/teachers")
@@ -236,5 +239,25 @@ public class AdminController {
             taskService.removeGlobalBoost();
         }
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/tasks")
+    public List<TaskSummaryDto> getAllTasksForAdmin() {
+        return taskRepository.findAll().stream().map(task -> {
+            String assigner = null;
+            if (task.getAssignedByUserId() != null) {
+                var userOpt = userRepository.findById(task.getAssignedByUserId().intValue());
+                if (userOpt.isPresent()) {
+                    var user = userOpt.get();
+                    assigner = user.getFirstName() + " " + user.getLastName();
+                }
+            }
+            return new TaskSummaryDto(
+                task.getTitle(),
+                task.getTaskType() != null ? task.getTaskType().name() : null,
+                String.valueOf(task.getTier()),
+                assigner
+            );
+        }).toList();
     }
 }
